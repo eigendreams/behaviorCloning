@@ -35,11 +35,11 @@ from math import pi
 """
 I joined datasets using both UNIX and WINDOWS conventions, so this is needed
 """
-
 dataset = "com"
 dataset_val = "validation"
 separator = "/"
-separator2 = "\\""""
+separator2 = "\\"
+"""
 This function takes the dataset as argument and returns the driving log
 """
 
