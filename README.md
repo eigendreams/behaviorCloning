@@ -31,10 +31,8 @@ For data augmentation, the only thing I really did was horizontal flips of the i
 'offset angle' to the side (left and right) camera images, since we want to add 'pressure' for the car to go 
 back to the center. In the code:
 
-"""
-left_ang    = center_ang + abs(center_ang * 0.75) + 5 * pi / 180.0
-right_ang   = center_ang - abs(center_ang * 0.75) - 5 * pi / 180.0
-"""
+		left_ang    = center_ang + abs(center_ang * 0.75) + 5 * pi / 180.0
+		right_ang   = center_ang - abs(center_ang * 0.75) - 5 * pi / 180.0
 
 The images were all reduce to 1/4 of their original size, and cropped to reflect only the area with lane 
 markers (ie, ot the sky and not the car itself). I used all three RGB channels as well. No further 
