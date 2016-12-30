@@ -7,15 +7,15 @@ came from the need to generate good data, which is difficult if using a keyboard
 I found out that you really do not need to use a GPU or AWS in order to train the model, which was 
 surprising. Though I must disclaim first that:
 
-1.- I mostly used IPYTHON for everything, so formatting of the model.py file might be somewhat awkward.
-2.- I generated most of the data myself, but I did use the dataset provided by Udacity for training as well.
-3.- I did not have a joystick available, so all my data was generated using the keyboard. This seems to 
-need significantly more data, or data augmentation (which I did not use) in order to work well.
-4.- I generated a validatio set post training, since I was using generators, and frankly, the only way to 
-really validate is to run the simulation and let the network try to provide the angle.
-5.- I reduced the throttle speed in the drive.py file, as at higher speeds at first I was weary of just 
-letting it go, in retrsopective this is nonsense, as it is a simulation, and anyway it still works at the 
-original throttle.
+		1.- I mostly used IPYTHON for everything, so formatting of the model.py file might be somewhat awkward.
+		2.- I generated most of the data myself, but I did use the dataset provided by Udacity for training as well.
+		3.- I did not have a joystick available, so all my data was generated using the keyboard. This seems to 
+		need significantly more data, or data augmentation (which I did not use) in order to work well.
+		4.- I generated a validatio set post training, since I was using generators, and frankly, the only way to 
+		really validate is to run the simulation and let the network try to provide the angle.
+		5.- I reduced the throttle speed in the drive.py file, as at higher speeds at first I was weary of just 
+		letting it go, in retrsopective this is nonsense, as it is a simulation, and anyway it still works at the 
+		original throttle.
 
 ## 2. Data
 
@@ -109,18 +109,18 @@ most likely it will not work as well.
 
 The network architecture is simply:
 
-conv2d(3x3, 48) -> maxpool(2x2) -> ELU() 
-conv2d(3x3, 64) -> maxpool(2x2) -> ELU() 
-conv2d(3x3, 80) -> maxpool(2x2) -> ELU() 
-Flatten()
-Dropout(0.2)
-Dense(512) -> ELU()
-Dense(256) -> ELU()
-Dense(128) -> ELU()
-Dense(64)  -> ELU()
-Dropout(0.2)
-Dense(16)  -> ELU()
-Dense(1)
+		conv2d(3x3, 48) -> maxpool(2x2) -> ELU() 
+		conv2d(3x3, 64) -> maxpool(2x2) -> ELU() 
+		conv2d(3x3, 80) -> maxpool(2x2) -> ELU() 
+		Flatten()
+		Dropout(0.2)
+		Dense(512) -> ELU()
+		Dense(256) -> ELU()
+		Dense(128) -> ELU()
+		Dense(64)  -> ELU()
+		Dropout(0.2)
+		Dense(16)  -> ELU()
+		Dense(1)
 
 The first convolutional layers are there to try to catch general features of the road, while the last fully
 connected layers try to use those found features to produce the steering angle.
