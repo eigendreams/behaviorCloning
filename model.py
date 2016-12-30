@@ -36,7 +36,7 @@ from math import pi
 I joined datasets using both UNIX and WINDOWS conventions, so this is needed
 """
 
-dataset = "test"
+dataset = "com"
 dataset_val = "validation"
 separator = "/"
 separator2 = "\\""""
