@@ -2,6 +2,9 @@
 
 ## 1. Generalities
 
+Please also see the bcBase.ipynb file, as I worked there for the most part. I also committed the HTML
+version of it to GitHub.
+
 This project ended up being far more frustrating than I expected. It seems most of my frustration 
 came from the need to generate good data, which is difficult if using a keyboard. That being said, 
 I found out that you really do not need to use a GPU or AWS in order to train the model, which was 
@@ -18,6 +21,10 @@ surprising. Though I must disclaim first that:
 		original throttle.
 
 ## 2. Data
+
+Dataset at (includes Udacity dataset): 
+
+		https://www.dropbox.com/s/xi8polbq70kewkp/com.zip?dl=0
 
 I could only use the keyboard. I generated around 3GB of data, driving around the loop many times, and also 
 taking some recordings for recovery scenarios. I think that, in the end, those recovery scenarios were the 

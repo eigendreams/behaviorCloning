@@ -68,17 +68,17 @@ def telemetry(sid, data):
     # The current image from the center camera of the car
     imgString = data["image"]
     
-	"""
-	modifications
-	"""
-	image = Image.open(BytesIO(base64.b64decode(imgString)))
+    """
+    modifications
+    """
+    image = Image.open(BytesIO(base64.b64decode(imgString)))
     image_array = np.asarray(image)[60:140,:,:]
     image_center = cv2.resize(image_array, (0,0), fx=1/scale_factor, fy=1/scale_factor )
     image_center = preprocess_image(image_center)
     transformed_image_array = image_center.reshape(( 1, image_center.shape[0], image_center.shape[1], 3))
-	"""
-	modifications
-	"""
+    """
+    modifications
+    """
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
     # The driving model currently just outputs a constant throttle. Feel free to edit this.
