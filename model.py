@@ -230,8 +230,6 @@ def simpleGenerator(datasetpath, drivinglog):
         idx = [x for x in range(i * batch_size, min( len(drivinglog), (i + 1) * batch_size))]
         ccidx = 0
         for j in idx:
-            
-            +
             center_path = 'datasets/' + datasetpath +'/IMG/' + drivinglog[j][0].split(separator)[-1].split(separator2)[-1]
             left_path   = 'datasets/' + datasetpath +'/IMG/' + drivinglog[j][1].split(separator)[-1].split(separator2)[-1]
             right_path  = 'datasets/' + datasetpath +'/IMG/' + drivinglog[j][2].split(separator)[-1].split(separator2)[-1]
