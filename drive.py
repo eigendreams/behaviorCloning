@@ -73,7 +73,7 @@ def telemetry(sid, data):
     """
     image = Image.open(BytesIO(base64.b64decode(imgString)))
     image_array = np.asarray(image)[60:140,:,:]
-    image_center = cv2.resize(image_array, (0,0), fx=1/scale_factor, fy=1/scale_factor )
+    image_center = cv2.resize(image_array, (0,0), fx=1/scale_factor, fy=1/scale_factor, interpolation=cv2.INTER_AREA)
     image_center = preprocess_image(image_center)
     transformed_image_array = image_center.reshape(( 1, image_center.shape[0], image_center.shape[1], 3))
     """
