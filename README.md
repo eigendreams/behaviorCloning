@@ -185,3 +185,12 @@ The model works. Though it still has troubles at very steep curves. I do not see
 if using the keyboard to generate the data. But it works! Even after feeding it such bad data. I have even
 seen that much simpler networks could also work, though it seems that such students used a lot of
 data augmentation, and also a proper joystick.
+
+## Usage
+
+Please just use the drive.py script supplied here, with argument:
+
+	model.json
+	
+It should work out of the box. Also, though the model.py can be used it really is nicer if using IPYTHON, just
+open the bcBase.ipynb notebook.

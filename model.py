@@ -385,8 +385,7 @@ plt.show()
 #identify diggicult sections
 #
 #Load saved model to retrain
-#model = load_model('weights-improvement-14-0.02513.hdf5')
-model = load_model('weights-improvement-00-0.02757.hdf5')
+#model = load_model('weights-improvement-00-0.02757.hdf5')
 
 
 # In[22]:
