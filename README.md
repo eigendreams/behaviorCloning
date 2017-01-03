@@ -150,7 +150,7 @@ The network architecture is simply:
 
 The first convoltional layers let the network learn its own color space. It seems useful to do a 
 feature wise batch normalization, but since the data preprocessing already normalizes the images, there 
-is no notorious difference in performance.
+is no notorious difference in performance. See https://arxiv.org/pdf/1606.02228v2.pdf
 		
 The next convolutional layers are there to try to catch general features of the road, while the last fully
 connected layers try to use those found features to produce the steering angle.
