@@ -11,20 +11,24 @@ I found out that you really do not need to use a GPU or AWS in order to train th
 surprising. Though I must disclaim first that:
 
 		1.- I mostly used IPYTHON for everything, so formatting of the model.py file might be somewhat awkward.
+			Because of this, the model.py or even the IPYNB will of course NOT reflect the real number of epochs
+			used, as I generated more data and trained with that on an as needed basis.
 		2.- I generated most of the data myself, but I did use the dataset provided by Udacity for training as well.
 		3.- I did not have a joystick available, so all my data was generated using the keyboard. This seems to 
-		need significantly more data, or data augmentation (which I did not use) in order to work well.
-		4.- I generated a validatio set post training, since I was using generators, and frankly, the only way to 
-		really validate is to run the simulation and let the network try to provide the angle.
-		5.- I reduced the throttle speed in the drive.py file, as at higher speeds at first I was weary of just 
-		letting it go, in retrsopective this is nonsense, as it is a simulation, and anyway it still works at the 
-		original throttle.
+			need significantly more data, or data augmentation (which I did not use) in order to work well.
+			Udacity should improve the interface of their simulator. As I use a corporate laptop, I am not even
+			sure that I could use a joystick.
+		4.- I generated a validation set post training, since I was using generators, and frankly, the only way to 
+			really validate is to run the simulation and let the network try to provide the angle. Though in later
+			experiments a validator set does seems good as a suggestions for when to stop, but a lower validation
+			error is NOT a reflect of a better NN in this case. NNs with much higher validation losses worked
+			better in some cases. I blame bad data.
+		5.- I manually tested the generated NNs first epoch by epoch, and alter on, after including a validation
+			set, tested the ones with least error. This was done as the first epochs were very very long, but 
+			later ones were smaller, and more data was added to the dataset for difficult sections. In a way, this
+			first part can be though as giving the NN a rough start, and the later part as refinaments.
 
 ## 2. Data
-
-Dataset at (includes Udacity dataset): 
-
-		https://www.dropbox.com/s/xi8polbq70kewkp/com.zip?dl=0
 
 I could only use the keyboard. I generated around 3GB of data, driving around the loop many times, and also 
 taking some recordings for recovery scenarios. I think that, in the end, those recovery scenarios were the 
@@ -32,24 +36,30 @@ crucial secret sauce needed to train the model.
 
 I do not remember how many times I drove around the lap, but they were many. I also iterated data recording 
 and training for a while, but I saw later on that the network (at least mine) works better if it is trained 
-with the entire dataset, after adding 'special sections'. So training took a long long while. I
+with the entire dataset, after adding 'special sections'. So training took a long long while.
 
 For data augmentation, the only thing I really did was horizontal flips of the image. And I also added an 
 'offset angle' to the side (left and right) camera images, since we want to add 'pressure' for the car to go 
 back to the center. In the code:
 
-		left_ang    = center_ang + abs(center_ang * 0.75) + 5 * pi / 180.0
-		right_ang   = center_ang - abs(center_ang * 0.75) - 5 * pi / 180.0
+		left_ang    = center_ang + abs(center_ang * 0.75) + 6 * pi / 180.0
+		right_ang   = center_ang - abs(center_ang * 0.75) - 6 * pi / 180.0
 
 The images were all reduce to 1/4 of their original size, and cropped to reflect only the area with lane 
-markers (ie, ot the sky and not the car itself). I used all three RGB channels as well. No further 
-preprocessing (beyond normalization to a -0.5,0.5 range) was done.
+markers (ie, not the sky nor the car). I used all three RGB channels as well. No further 
+preprocessing (beyond normalization to a -0.5,0.5 range) was done. However, the firs layers of the
+network perform 1x1 convolutions to let the network learn its color space, as suggested by the paper:
+https://arxiv.org/pdf/1606.02228v2.pdf
 
 Also, and most importantly, no filtering was used whatsoever for the angles. At first I tried using a low 
 pass filter, but performance in curves was horrible. After obtaining a 'curated' dataset and just avoiding 
 any filtering, performance improved a lot. Of course, I had to take some extra recordings on some sections, 
 like the curve right after the bridge, and retrain with this new data added to all previous datasets. It is 
-not perfect, but I was feed up at the moment, and right after that it was holidays.
+not perfect, but I was feed up at the moment, and right after that it was holidays. Also, mixing filtering
+and abusive use of the pause button will 'pollute' the data.
+
+It is also convenient, it seems, to set INTER_AREA as interpolation method for resizing on opencv. IT seems
+this works as a smoothing algo (over the image) of sorts by itself.
 
 ## Model
 
@@ -59,79 +69,96 @@ and performance was subpar. In the end, I settled on a much simpler network:
 
 		Input shape = (20, 80, 3)
 
+		____________________________________________________________________________________________________
 		Layer (type)                     Output Shape          Param #     Connected to                     
 		====================================================================================================
-		convolution2d_4 (Convolution2D)  (None, 20, 80.0, 48)  1344        convolution2d_input_3[0][0]      
+		batchnormalization_1 (BatchNorma (None, 20, 80.0, 3)   6           batchnormalization_input_1[0][0] 
 		____________________________________________________________________________________________________
-		maxpooling2d_4 (MaxPooling2D)    (None, 10, 40.0, 48)  0           convolution2d_4[0][0]            
+		convolution2d_1 (Convolution2D)  (None, 20, 80.0, 10)  40          batchnormalization_1[0][0]       
 		____________________________________________________________________________________________________
-		activation_9 (Activation)        (None, 10, 40.0, 48)  0           maxpooling2d_4[0][0]             
+		activation_1 (Activation)        (None, 20, 80.0, 10)  0           convolution2d_1[0][0]            
 		____________________________________________________________________________________________________
-		convolution2d_5 (Convolution2D)  (None, 10, 40.0, 64)  27712       activation_9[0][0]               
+		convolution2d_2 (Convolution2D)  (None, 20, 80.0, 3)   33          activation_1[0][0]               
 		____________________________________________________________________________________________________
-		maxpooling2d_5 (MaxPooling2D)    (None, 5, 20.0, 64)   0           convolution2d_5[0][0]            
+		activation_2 (Activation)        (None, 20, 80.0, 3)   0           convolution2d_2[0][0]            
 		____________________________________________________________________________________________________
-		activation_10 (Activation)       (None, 5, 20.0, 64)   0           maxpooling2d_5[0][0]             
+		convolution2d_3 (Convolution2D)  (None, 20, 80.0, 60)  1680        activation_2[0][0]               
 		____________________________________________________________________________________________________
-		convolution2d_6 (Convolution2D)  (None, 5, 20.0, 80)   46160       activation_10[0][0]              
+		maxpooling2d_1 (MaxPooling2D)    (None, 10, 40.0, 60)  0           convolution2d_3[0][0]            
 		____________________________________________________________________________________________________
-		maxpooling2d_6 (MaxPooling2D)    (None, 2, 10.0, 80)   0           convolution2d_6[0][0]            
+		activation_3 (Activation)        (None, 10, 40.0, 60)  0           maxpooling2d_1[0][0]             
 		____________________________________________________________________________________________________
-		activation_11 (Activation)       (None, 2, 10.0, 80)   0           maxpooling2d_6[0][0]             
+		convolution2d_4 (Convolution2D)  (None, 10, 40.0, 90)  48690       activation_3[0][0]               
 		____________________________________________________________________________________________________
-		flatten_2 (Flatten)              (None, 1600.0)        0           activation_11[0][0]              
+		maxpooling2d_2 (MaxPooling2D)    (None, 5, 20.0, 90)   0           convolution2d_4[0][0]            
 		____________________________________________________________________________________________________
-		dropout_3 (Dropout)              (None, 1600.0)        0           flatten_2[0][0]                  
+		activation_4 (Activation)        (None, 5, 20.0, 90)   0           maxpooling2d_2[0][0]             
 		____________________________________________________________________________________________________
-		dense_7 (Dense)                  (None, 512)           819712      dropout_3[0][0]                  
+		convolution2d_5 (Convolution2D)  (None, 3, 18.0, 120)  97320       activation_4[0][0]               
 		____________________________________________________________________________________________________
-		activation_12 (Activation)       (None, 512)           0           dense_7[0][0]                    
+		maxpooling2d_3 (MaxPooling2D)    (None, 3, 6.0, 120)   0           convolution2d_5[0][0]            
 		____________________________________________________________________________________________________
-		dense_8 (Dense)                  (None, 256)           131328      activation_12[0][0]              
+		activation_5 (Activation)        (None, 3, 6.0, 120)   0           maxpooling2d_3[0][0]             
 		____________________________________________________________________________________________________
-		activation_13 (Activation)       (None, 256)           0           dense_8[0][0]                    
+		flatten_1 (Flatten)              (None, 2160.0)        0           activation_5[0][0]               
 		____________________________________________________________________________________________________
-		dense_9 (Dense)                  (None, 128)           32896       activation_13[0][0]              
+		dropout_1 (Dropout)              (None, 2160.0)        0           flatten_1[0][0]                  
 		____________________________________________________________________________________________________
-		activation_14 (Activation)       (None, 128)           0           dense_9[0][0]                    
+		dense_1 (Dense)                  (None, 640)           1383040     dropout_1[0][0]                  
 		____________________________________________________________________________________________________
-		dense_10 (Dense)                 (None, 64)            8256        activation_14[0][0]              
+		activation_6 (Activation)        (None, 640)           0           dense_1[0][0]                    
 		____________________________________________________________________________________________________
-		activation_15 (Activation)       (None, 64)            0           dense_10[0][0]                   
+		dense_2 (Dense)                  (None, 320)           205120      activation_6[0][0]               
 		____________________________________________________________________________________________________
-		dropout_4 (Dropout)              (None, 64)            0           activation_15[0][0]              
+		activation_7 (Activation)        (None, 320)           0           dense_2[0][0]                    
 		____________________________________________________________________________________________________
-		dense_11 (Dense)                 (None, 16)            1040        dropout_4[0][0]                  
+		dense_3 (Dense)                  (None, 160)           51360       activation_7[0][0]               
 		____________________________________________________________________________________________________
-		activation_16 (Activation)       (None, 16)            0           dense_11[0][0]                   
+		activation_8 (Activation)        (None, 160)           0           dense_3[0][0]                    
 		____________________________________________________________________________________________________
-		dense_12 (Dense)                 (None, 1)             17          activation_16[0][0]              
+		dense_4 (Dense)                  (None, 80)            12880       activation_8[0][0]               
+		____________________________________________________________________________________________________
+		activation_9 (Activation)        (None, 80)            0           dense_4[0][0]                    
+		____________________________________________________________________________________________________
+		dense_5 (Dense)                  (None, 20)            1620        activation_9[0][0]               
+		____________________________________________________________________________________________________
+		activation_10 (Activation)       (None, 20)            0           dense_5[0][0]                    
+		____________________________________________________________________________________________________
+		dense_6 (Dense)                  (None, 1)             21          activation_10[0][0]              
 		====================================================================================================
-		Total params: 1068465
+		Total params: 1801810
 
 Please note, that all this was done interactively on IPYTHON, so, if model.py is executed from scratch,
 most likely it will not work as well.
 
 The network architecture is simply:
 
-		conv2d(3x3, 48) -> maxpool(2x2) -> ELU() 
-		conv2d(3x3, 64) -> maxpool(2x2) -> ELU() 
-		conv2d(3x3, 80) -> maxpool(2x2) -> ELU() 
+		BatchNormalization()
+		Convolution2D(1x1, 10)  -> ELU() 
+		Convolution2D(1x1, 3)   -> ELU() 
+		Convolution2D(3x3, 60, 'same')   -> MaxPooling2D(2x2) -> ELU() 
+		Convolution2D(3x3, 90, 'same')   -> MaxPooling2D(2x2) -> ELU() 
+		Convolution2D(3x3, 120, 'valid') -> MaxPooling2D(1x3) -> ELU() 
 		Flatten()
 		Dropout(0.2)
-		Dense(512) -> ELU()
-		Dense(256) -> ELU()
-		Dense(128) -> ELU()
-		Dense(64)  -> ELU()
-		Dropout(0.2)
-		Dense(16)  -> ELU()
+		Dense(640) -> ELU()
+		Dense(320) -> ELU()
+		Dense(160) -> ELU()
+		Dense(80)  -> ELU()
+		Dense(20)  -> ELU()
 		Dense(1)
 
-The first convolutional layers are there to try to catch general features of the road, while the last fully
+The first convoltional layers let the network learn its own color space. It seems useful to do a 
+feature wise batch normalization, but since the data preprocessing already normalizes the images, there 
+is no notorious difference in performance.
+		
+The next convolutional layers are there to try to catch general features of the road, while the last fully
 connected layers try to use those found features to produce the steering angle.
 
-The dropout layers were added to try to combat overfitting. At first I tried to use batch normalization, but
-it went horribly wrong.
+The dropout layer was added to try to combat overfitting. At first I tried to use batch normalization, but
+it went horribly wrong. I suspect that, if I had good data, BN could work much much better, but this is 
+not the case. This might actually happen because when using BN, the network learns 'too' well and easily
+fits the data, trouble is, the data is not very good.
 
 The last layer has no activation (linear) since this is a regression problem.
 
@@ -144,7 +171,13 @@ not learn anything.
 Ok, so I really believe that in this particular project, the only meaningfull validation is trying the
 simulator itself. But anyhow, I geerated a dataset consisting of two normal laps, and used that as the
 validation set. Since I had to use generators, and the data itself is augmented, if only a bit, I did not
-want to use a subset of the generated datasets for training.
+want to use a subset of the generated datasets for training (which I think is reasonable). Since the training
+strategy was first try a few very big epochs and testing each manually until the NN started to do something
+more or less passable, no validation set was used in here.
+
+Later on, when adding even more data for difficult sections, for refining the network (also using smaller
+epochs), I used the validation set to monitor the NN. While lower validation losses did NOT mean better networks, 
+it was handy to know when to stop training and produce candidate networks to test.
 
 ## Performance
 
